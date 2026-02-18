@@ -28,6 +28,22 @@ import { maybeShowInterstitial } from '../../src/components/ads/InterstitialAd';
 import { getGreeting, isHabitDueOnDate, isHabitPausedOnDate } from '../../src/utils/date';
 import { encouragingMessages } from '../../src/constants/templates';
 import { ContextTag } from '../../src/types/habit';
+import { useShallow } from 'zustand/react/shallow';
+
+function areStreakMapsEqual(
+  current: Record<string, number>,
+  next: Record<string, number>
+): boolean {
+  const currentKeys = Object.keys(current);
+  const nextKeys = Object.keys(next);
+  if (currentKeys.length !== nextKeys.length) return false;
+
+  for (const key of nextKeys) {
+    if (current[key] !== next[key]) return false;
+  }
+
+  return true;
+}
 
 export default function TodayScreen() {
   const colors = useColors();
@@ -44,7 +60,20 @@ export default function TodayScreen() {
     pauseHabit,
     loadTodayCompletions,
     getFlexStreak,
-  } = useHabitStore();
+  } = useHabitStore(
+    useShallow((state) => ({
+      habits: state.habits,
+      todayCompletions: state.todayCompletions,
+      isLoading: state.isLoading,
+      selectedDate: state.selectedDate,
+      setSelectedDate: state.setSelectedDate,
+      toggleCompletion: state.toggleCompletion,
+      skipHabit: state.skipHabit,
+      pauseHabit: state.pauseHabit,
+      loadTodayCompletions: state.loadTodayCompletions,
+      getFlexStreak: state.getFlexStreak,
+    }))
+  );
 
   const [refreshing, setRefreshing] = useState(false);
   const [contextSheetVisible, setContextSheetVisible] = useState(false);
@@ -60,8 +89,11 @@ export default function TodayScreen() {
     [todayDate]
   );
 
-  const selectedDateObj = parseISO(selectedDate);
-  const hasTrackableHabits = habits.some((habit) => habit.status !== 'archived');
+  const selectedDateObj = useMemo(() => parseISO(selectedDate), [selectedDate]);
+  const hasTrackableHabits = useMemo(
+    () => habits.some((habit) => habit.status !== 'archived'),
+    [habits]
+  );
 
   const todayHabits = useMemo(
     () =>
@@ -74,26 +106,59 @@ export default function TodayScreen() {
     [habits, selectedDate]
   );
 
-  const completedCount = todayHabits.filter(
-    (h) => todayCompletions.get(h.id)?.status === 'completed'
-  ).length;
-  const totalCount = todayHabits.filter((h) => h.status === 'active').length;
+  const completedCount = useMemo(
+    () =>
+      todayHabits.reduce(
+        (count, habit) => count + (todayCompletions.get(habit.id)?.status === 'completed' ? 1 : 0),
+        0
+      ),
+    [todayHabits, todayCompletions]
+  );
+  const totalCount = todayHabits.length;
   const completionPercentage = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
+  const maxStreak = useMemo(
+    () => Object.values(streaks).reduce((max, value) => Math.max(max, value), 0),
+    [streaks]
+  );
 
-  const dailyInsightTitle =
-    completionPercentage >= 80
-      ? 'Identity Momentum'
-      : completionPercentage >= 40
-        ? 'Keep the Chain Alive'
-        : 'Start Tiny Today';
-  const dailyInsightBody =
-    completionPercentage >= 80
-      ? 'You are reinforcing identity with repeat action. Protect this rhythm tomorrow.'
-      : completionPercentage >= 40
-        ? 'One more check-in today can push your day into a winning pattern.'
-        : 'Use the 2-minute rule. Start with the smallest version and build after.';
+  const { dailyInsightTitle, dailyInsightBody } = useMemo(() => {
+    if (completionPercentage >= 80) {
+      return {
+        dailyInsightTitle: 'Identity Momentum',
+        dailyInsightBody:
+          'You are reinforcing identity with repeat action. Protect this rhythm tomorrow.',
+      };
+    }
+
+    if (completionPercentage >= 40) {
+      return {
+        dailyInsightTitle: 'Keep the Chain Alive',
+        dailyInsightBody: 'One more check-in today can push your day into a winning pattern.',
+      };
+    }
+
+    return {
+      dailyInsightTitle: 'Start Tiny Today',
+      dailyInsightBody: 'Use the 2-minute rule. Start with the smallest version and build after.',
+    };
+  }, [completionPercentage]);
+
+  const refreshStreakForHabit = useCallback(
+    async (habitId: string) => {
+      const flex = await getFlexStreak(habitId);
+      setStreaks((previous) => {
+        if (previous[habitId] === flex.days7) {
+          return previous;
+        }
+        return { ...previous, [habitId]: flex.days7 };
+      });
+    },
+    [getFlexStreak]
+  );
 
   useEffect(() => {
+    let cancelled = false;
+
     async function loadStreaks() {
       const streakEntries = await Promise.all(
         todayHabits.map(async (habit) => {
@@ -101,12 +166,22 @@ export default function TodayScreen() {
           return [habit.id, flex.days7] as const;
         })
       );
+
+      if (cancelled) return;
       const streakData = Object.fromEntries(streakEntries) as Record<string, number>;
-      setStreaks(streakData);
+      setStreaks((previous) => (areStreakMapsEqual(previous, streakData) ? previous : streakData));
     }
-    if (todayHabits.length > 0) loadStreaks();
-    else setStreaks({});
-  }, [todayHabits, todayCompletions, getFlexStreak]);
+
+    if (todayHabits.length > 0) {
+      void loadStreaks();
+    } else {
+      setStreaks((previous) => (Object.keys(previous).length === 0 ? previous : {}));
+    }
+
+    return () => {
+      cancelled = true;
+    };
+  }, [todayHabits, getFlexStreak]);
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
@@ -116,15 +191,17 @@ export default function TodayScreen() {
 
   const handleToggle = useCallback(
     async (habitId: string) => {
+      const wasCompleted = todayCompletions.get(habitId)?.status === 'completed';
       await toggleCompletion(habitId);
-      const completion = todayCompletions.get(habitId);
-      if (!completion || completion.status !== 'completed') {
+      void refreshStreakForHabit(habitId);
+
+      if (!wasCompleted) {
         setToastMessage(encouragingMessages[Math.floor(Math.random() * encouragingMessages.length)]);
         setShowToast(true);
         maybeShowInterstitial();
       }
     },
-    [todayCompletions, toggleCompletion]
+    [todayCompletions, toggleCompletion, refreshStreakForHabit]
   );
 
   const handleHabitPress = useCallback(
@@ -148,11 +225,12 @@ export default function TodayScreen() {
     async (tag: ContextTag, note?: string) => {
       if (selectedHabitId) {
         await skipHabit(selectedHabitId, tag, note);
+        void refreshStreakForHabit(selectedHabitId);
         setToastMessage('Habit skipped — no judgment!');
         setShowToast(true);
       }
     },
-    [selectedHabitId, skipHabit]
+    [selectedHabitId, skipHabit, refreshStreakForHabit]
   );
 
   const handlePause = useCallback(
@@ -166,7 +244,10 @@ export default function TodayScreen() {
     [selectedHabitId, pauseHabit]
   );
 
-  const selectedHabit = habits.find((h) => h.id === selectedHabitId);
+  const selectedHabit = useMemo(
+    () => habits.find((h) => h.id === selectedHabitId),
+    [habits, selectedHabitId]
+  );
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
@@ -262,7 +343,7 @@ export default function TodayScreen() {
             <View style={styles.progressMetaRow}>
               <Ionicons name="flame-outline" size={14} color="#F59E0B" />
               <Text style={[styles.progressMetaText, { color: colors.textPrimary }]}>
-                {Object.values(streaks).reduce((max, value) => Math.max(max, value), 0)} day streak
+                {maxStreak} day streak
               </Text>
             </View>
           </View>

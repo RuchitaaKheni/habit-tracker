@@ -3,7 +3,7 @@ import {
   View,
   Text,
   StyleSheet,
-  ScrollView,
+  FlatList,
   TouchableOpacity,
   Alert,
 } from 'react-native';
@@ -19,6 +19,7 @@ import { EmptyState } from '../../src/components/ui/EmptyState';
 import { BannerAdComponent } from '../../src/components/ads/BannerAd';
 import { Habit } from '../../src/types/habit';
 import { getHabitFrequencyLabel } from '../../src/utils/habit';
+import { useShallow } from 'zustand/react/shallow';
 
 type FilterTab = 'all' | 'active' | 'paused' | 'archived';
 
@@ -27,7 +28,15 @@ export default function HabitsScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const haptics = useHaptics();
-  const { habits, resumeHabit, archiveHabit, unarchiveHabit, deleteHabit } = useHabitStore();
+  const { habits, resumeHabit, archiveHabit, unarchiveHabit, deleteHabit } = useHabitStore(
+    useShallow((state) => ({
+      habits: state.habits,
+      resumeHabit: state.resumeHabit,
+      archiveHabit: state.archiveHabit,
+      unarchiveHabit: state.unarchiveHabit,
+      deleteHabit: state.deleteHabit,
+    }))
+  );
   const [activeFilter, setActiveFilter] = useState<FilterTab>('all');
 
   const allHabits = habits;
@@ -93,61 +102,67 @@ export default function HabitsScreen() {
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
-      <ScrollView
+      <FlatList
+        data={filteredHabits}
+        keyExtractor={(item) => item.id}
+        initialNumToRender={8}
+        maxToRenderPerBatch={8}
+        windowSize={7}
+        removeClippedSubviews
         contentContainerStyle={{ paddingTop: insets.top + Spacing.md, paddingBottom: 120 }}
         showsVerticalScrollIndicator={false}
-      >
-        <Text style={[styles.screenTitle, { color: colors.textPrimary }]}>My Habits</Text>
-        <Text style={[styles.screenSubtitle, { color: colors.textSecondary }]}>
-          Keep your list clear, focused, and easy to maintain.
-        </Text>
+        ListHeaderComponent={
+          <>
+            <Text style={[styles.screenTitle, { color: colors.textPrimary }]}>My Habits</Text>
+            <Text style={[styles.screenSubtitle, { color: colors.textSecondary }]}>
+              Keep your list clear, focused, and easy to maintain.
+            </Text>
 
-        <View
-          style={[
-            styles.psychologyBanner,
-            { backgroundColor: colors.surfaceSecondary, borderColor: colors.borderLight },
-          ]}
-        >
-          <Ionicons name="school-outline" size={16} color={colors.primary} />
-          <Text style={[styles.psychologyText, { color: colors.textSecondary }]}>
-            Identity first: every completion is a vote for the person you want to become.
-          </Text>
-        </View>
-
-        {/* Filter tabs */}
-        <View style={styles.filterRow}>
-          {filters.map((filter) => (
-            <TouchableOpacity
-              key={filter.value}
+            <View
               style={[
-                styles.filterTab,
-                {
-                  backgroundColor:
-                    activeFilter === filter.value ? colors.primary : colors.surfaceSecondary,
-                  borderColor: activeFilter === filter.value ? colors.primary : colors.border,
-                },
+                styles.psychologyBanner,
+                { backgroundColor: colors.surfaceSecondary, borderColor: colors.borderLight },
               ]}
-              onPress={() => {
-                haptics.selection();
-                setActiveFilter(filter.value);
-              }}
             >
-              <Text
-                style={[
-                  styles.filterText,
-                  {
-                    color: activeFilter === filter.value ? '#FFFFFF' : colors.textSecondary,
-                  },
-                ]}
-              >
-                {filter.label}
+              <Ionicons name="school-outline" size={16} color={colors.primary} />
+              <Text style={[styles.psychologyText, { color: colors.textSecondary }]}>
+                Identity first: every completion is a vote for the person you want to become.
               </Text>
-            </TouchableOpacity>
-          ))}
-        </View>
+            </View>
 
-        {/* Habit list */}
-        {filteredHabits.length === 0 ? (
+            <View style={styles.filterRow}>
+              {filters.map((filter) => (
+                <TouchableOpacity
+                  key={filter.value}
+                  style={[
+                    styles.filterTab,
+                    {
+                      backgroundColor:
+                        activeFilter === filter.value ? colors.primary : colors.surfaceSecondary,
+                      borderColor: activeFilter === filter.value ? colors.primary : colors.border,
+                    },
+                  ]}
+                  onPress={() => {
+                    haptics.selection();
+                    setActiveFilter(filter.value);
+                  }}
+                >
+                  <Text
+                    style={[
+                      styles.filterText,
+                      {
+                        color: activeFilter === filter.value ? '#FFFFFF' : colors.textSecondary,
+                      },
+                    ]}
+                  >
+                    {filter.label}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          </>
+        }
+        ListEmptyComponent={
           <EmptyState
             icon="📋"
             title={activeFilter === 'all' ? 'No habits yet' : `No ${activeFilter} habits`}
@@ -159,54 +174,52 @@ export default function HabitsScreen() {
             actionLabel={activeFilter === 'all' ? 'Create Habit' : undefined}
             onAction={activeFilter === 'all' ? () => router.push('/habit/create') : undefined}
           />
-        ) : (
-          filteredHabits.map((habit, index) => {
-            const badge = getStatusBadge(habit.status);
-            return (
-              <Animated.View key={habit.id} entering={FadeInDown.delay(index * 60)}>
-                <TouchableOpacity
-                  style={[
-                    styles.habitRow,
-                    Shadows.sm,
-                    { backgroundColor: colors.surface, borderColor: colors.border },
-                  ]}
-                  onPress={() => router.push(`/habit/${habit.id}`)}
-                  onLongPress={() => handleHabitAction(habit)}
-                  activeOpacity={0.7}
-                >
-                  <View style={[styles.colorDot, { backgroundColor: habit.color }]} />
-                  <Text style={styles.habitIcon}>{habit.icon}</Text>
-                  <View style={styles.habitInfo}>
-                    <Text
-                      style={[
-                        styles.habitName,
-                        { color: colors.textPrimary },
-                        habit.status === 'paused' && { opacity: 0.6 },
-                      ]}
-                      numberOfLines={1}
-                    >
-                      {habit.name}
-                    </Text>
-                    <Text style={[styles.habitFreq, { color: colors.textSecondary }]}>
-                      {getHabitFrequencyLabel(habit)}
+        }
+        renderItem={({ item: habit, index }) => {
+          const badge = getStatusBadge(habit.status);
+          return (
+            <Animated.View entering={FadeInDown.delay(index * 40)}>
+              <TouchableOpacity
+                style={[
+                  styles.habitRow,
+                  Shadows.sm,
+                  { backgroundColor: colors.surface, borderColor: colors.border },
+                ]}
+                onPress={() => router.push(`/habit/${habit.id}`)}
+                onLongPress={() => handleHabitAction(habit)}
+                activeOpacity={0.7}
+              >
+                <View style={[styles.colorDot, { backgroundColor: habit.color }]} />
+                <Text style={styles.habitIcon}>{habit.icon}</Text>
+                <View style={styles.habitInfo}>
+                  <Text
+                    style={[
+                      styles.habitName,
+                      { color: colors.textPrimary },
+                      habit.status === 'paused' && { opacity: 0.6 },
+                    ]}
+                    numberOfLines={1}
+                  >
+                    {habit.name}
+                  </Text>
+                  <Text style={[styles.habitFreq, { color: colors.textSecondary }]}>
+                    {getHabitFrequencyLabel(habit)}
+                  </Text>
+                </View>
+                {badge && (
+                  <View style={[styles.statusBadge, { backgroundColor: badge.bg }]}>
+                    <Text style={[styles.statusBadgeText, { color: badge.color }]}>
+                      {badge.label}
                     </Text>
                   </View>
-                  {badge && (
-                    <View style={[styles.statusBadge, { backgroundColor: badge.bg }]}>
-                      <Text style={[styles.statusBadgeText, { color: badge.color }]}>
-                        {badge.label}
-                      </Text>
-                    </View>
-                  )}
-                  <Ionicons name="chevron-forward" size={18} color={colors.textTertiary} />
-                </TouchableOpacity>
-              </Animated.View>
-            );
-          })
-        )}
-
-        <BannerAdComponent />
-      </ScrollView>
+                )}
+                <Ionicons name="chevron-forward" size={18} color={colors.textTertiary} />
+              </TouchableOpacity>
+            </Animated.View>
+          );
+        }}
+        ListFooterComponent={<BannerAdComponent />}
+      />
 
       {/* FAB */}
       <TouchableOpacity

@@ -18,6 +18,7 @@ import { motivationQuizQuestions, habitTemplates } from '../../constants/templat
 import { useHabitStore } from '../../store/habitStore';
 import { Habit, MotivationType } from '../../types/habit';
 import { requestNotificationPermissions, setupNotificationCategories } from '../../services/notifications';
+import { useShallow } from 'zustand/react/shallow';
 
 interface OnboardingScreenProps {
   onComplete: () => void;
@@ -28,7 +29,13 @@ export function OnboardingScreen({ onComplete }: OnboardingScreenProps) {
   const insets = useSafeAreaInsets();
   const haptics = useHaptics();
   const [step, setStep] = useState(0);
-  const { addHabit, updateProfile, habits } = useHabitStore();
+  const { addHabit, updateProfile, habits } = useHabitStore(
+    useShallow((state) => ({
+      addHabit: state.addHabit,
+      updateProfile: state.updateProfile,
+      habits: state.habits,
+    }))
+  );
 
   // Quiz state
   const [quizAnswers, setQuizAnswers] = useState<string[]>([]);

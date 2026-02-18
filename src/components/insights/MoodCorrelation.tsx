@@ -3,8 +3,9 @@ import { View, Text, StyleSheet } from 'react-native';
 import { useColors } from '../../hooks/useColors';
 import { Typography, Spacing, BorderRadius } from '../../constants/theme';
 import { getMoodsInRange, getAllCompletionsInRange } from '../../database/database';
-import { getDateRange, getToday } from '../../utils/date';
+import { getDateRange } from '../../utils/date';
 import { useHabitStore } from '../../store/habitStore';
+import { useShallow } from 'zustand/react/shallow';
 
 interface MoodHabitCorrelation {
   habitName: string;
@@ -15,18 +16,26 @@ interface MoodHabitCorrelation {
 
 export function MoodCorrelation() {
   const colors = useColors();
-  const { habits } = useHabitStore();
+  const { habits } = useHabitStore(
+    useShallow((state) => ({
+      habits: state.habits,
+    }))
+  );
   const [correlations, setCorrelations] = useState<MoodHabitCorrelation[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    let cancelled = false;
+
     async function analyze() {
       const { start, end } = getDateRange(30);
       const moods = await getMoodsInRange(start, end);
       const completions = await getAllCompletionsInRange(start, end);
 
       if (moods.length < 5) {
-        setLoading(false);
+        if (!cancelled) {
+          setLoading(false);
+        }
         return;
       }
 
@@ -68,11 +77,16 @@ export function MoodCorrelation() {
       }
 
       results.sort((a, b) => b.difference - a.difference);
-      setCorrelations(results.slice(0, 5));
-      setLoading(false);
+      if (!cancelled) {
+        setCorrelations(results.slice(0, 5));
+        setLoading(false);
+      }
     }
 
-    analyze();
+    void analyze();
+    return () => {
+      cancelled = true;
+    };
   }, [habits]);
 
   if (loading) {

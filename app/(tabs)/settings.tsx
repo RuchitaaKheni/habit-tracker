@@ -25,15 +25,22 @@ import {
 } from '../../src/services/notifications';
 import { getDateRange, getToday } from '../../src/utils/date';
 import * as db from '../../src/database/database';
-
-type ThemeMode = 'light' | 'dark' | 'system';
+import { useShallow } from 'zustand/react/shallow';
 
 export default function SettingsScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const { mode, setMode } = useThemeStore();
-  const { profile, updateProfile, habits, getFlexStreak, initialize } = useHabitStore();
+  const { profile, updateProfile, habits, getFlexStreak, initialize } = useHabitStore(
+    useShallow((state) => ({
+      profile: state.profile,
+      updateProfile: state.updateProfile,
+      habits: state.habits,
+      getFlexStreak: state.getFlexStreak,
+      initialize: state.initialize,
+    }))
+  );
 
   const [notificationsEnabled, setNotificationsEnabled] = useState(
     profile?.notificationEnabled ?? true

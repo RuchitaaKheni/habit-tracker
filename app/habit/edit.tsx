@@ -21,6 +21,7 @@ import { useHabitStore } from '../../src/store/habitStore';
 import { Button } from '../../src/components/ui/Button';
 import { FrequencyType } from '../../src/types/habit';
 import { getDayShort } from '../../src/utils/date';
+import { useShallow } from 'zustand/react/shallow';
 
 export default function EditHabitScreen() {
   const colors = useColors();
@@ -28,7 +29,13 @@ export default function EditHabitScreen() {
   const router = useRouter();
   const haptics = useHaptics();
   const { id } = useLocalSearchParams<{ id: string }>();
-  const { habits, updateHabit, deleteHabit } = useHabitStore();
+  const { habits, updateHabit, deleteHabit } = useHabitStore(
+    useShallow((state) => ({
+      habits: state.habits,
+      updateHabit: state.updateHabit,
+      deleteHabit: state.deleteHabit,
+    }))
+  );
 
   const habit = habits.find((h) => h.id === id);
 

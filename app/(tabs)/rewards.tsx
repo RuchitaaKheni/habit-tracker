@@ -7,6 +7,7 @@ import { BorderRadius, Spacing, Typography } from '../../src/constants/theme';
 import { useHabitStore } from '../../src/store/habitStore';
 import { getDateRange, isHabitDueOnDate, isHabitPausedOnDate } from '../../src/utils/date';
 import * as db from '../../src/database/database';
+import { useShallow } from 'zustand/react/shallow';
 
 interface Achievement {
   id: string;
@@ -20,7 +21,12 @@ interface Achievement {
 export default function RewardsScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
-  const { habits, getFlexStreak } = useHabitStore();
+  const { habits, getFlexStreak } = useHabitStore(
+    useShallow((state) => ({
+      habits: state.habits,
+      getFlexStreak: state.getFlexStreak,
+    }))
+  );
   const [refreshing, setRefreshing] = useState(false);
   const [completedCount, setCompletedCount] = useState(0);
   const [bestStreak, setBestStreak] = useState(0);

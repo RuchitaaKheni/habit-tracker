@@ -22,7 +22,7 @@ interface HabitCardProps {
   onLongPress: (habitId: string) => void;
 }
 
-export function HabitCard({
+function HabitCardComponent({
   habit,
   completion,
   consistencyPercent,
@@ -167,6 +167,23 @@ export function HabitCard({
     </Animated.View>
   );
 }
+
+function areEqual(prev: HabitCardProps, next: HabitCardProps): boolean {
+  return (
+    prev.habit.id === next.habit.id &&
+    prev.habit.status === next.habit.status &&
+    prev.habit.updatedAt === next.habit.updatedAt &&
+    prev.completion?.id === next.completion?.id &&
+    prev.completion?.status === next.completion?.status &&
+    prev.completion?.contextNote === next.completion?.contextNote &&
+    prev.consistencyPercent === next.consistencyPercent &&
+    prev.onToggle === next.onToggle &&
+    prev.onPress === next.onPress &&
+    prev.onLongPress === next.onLongPress
+  );
+}
+
+export const HabitCard = React.memo(HabitCardComponent, areEqual);
 
 const styles = StyleSheet.create({
   card: {

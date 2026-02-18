@@ -17,13 +17,19 @@ import { MoodCorrelation } from '../../src/components/insights/MoodCorrelation';
 import { getDateRange, getToday } from '../../src/utils/date';
 import * as db from '../../src/database/database';
 import { HabitCompletion } from '../../src/types/habit';
+import { useShallow } from 'zustand/react/shallow';
 
 const ANALYTICS_WINDOW_DAYS = 35;
 
 export default function InsightsScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
-  const { habits, getFlexStreak } = useHabitStore();
+  const { habits, getFlexStreak } = useHabitStore(
+    useShallow((state) => ({
+      habits: state.habits,
+      getFlexStreak: state.getFlexStreak,
+    }))
+  );
   const [refreshing, setRefreshing] = useState(false);
   const [loading, setLoading] = useState(true);
   const [completions, setCompletions] = useState<HabitCompletion[]>([]);

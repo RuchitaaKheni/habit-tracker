@@ -18,6 +18,7 @@ import {
   setupNotificationCategories,
 } from '../src/services/notifications';
 import { getToday } from '../src/utils/date';
+import { useShallow } from 'zustand/react/shallow';
 
 function AppContent() {
   const colors = useColors();
@@ -29,7 +30,17 @@ function AppContent() {
     setSelectedDate,
     setCompletionStatus,
     loadTodayCompletions,
-  } = useHabitStore();
+  } = useHabitStore(
+    useShallow((state) => ({
+      initialize: state.initialize,
+      isLoading: state.isLoading,
+      profile: state.profile,
+      habits: state.habits,
+      setSelectedDate: state.setSelectedDate,
+      setCompletionStatus: state.setCompletionStatus,
+      loadTodayCompletions: state.loadTodayCompletions,
+    }))
+  );
   const loadTheme = useThemeStore((s) => s.loadTheme);
   const isDark = useThemeStore((s) => s.isDark);
   const loadAdState = useAdStore((s) => s.loadAdState);
@@ -37,17 +48,19 @@ function AppContent() {
 
   useEffect(() => {
     async function boot() {
-      await loadTheme();
-      await loadAdState();
-      await initialize();
-      await setupNotificationCategories();
+      await Promise.all([
+        loadTheme(),
+        loadAdState(),
+        setupNotificationCategories(),
+        initialize(),
+      ]);
 
       // Pre-load ads
-      loadInterstitial();
-      loadRewardedAd();
+      void loadInterstitial();
+      void loadRewardedAd();
     }
     void boot();
-  }, []);
+  }, [loadTheme, loadAdState, initialize]);
 
   useEffect(() => {
     const unsubscribe = registerHabitNotificationActions({

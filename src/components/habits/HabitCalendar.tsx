@@ -1,9 +1,9 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { useColors } from '../../hooks/useColors';
-import { Typography, Spacing, BorderRadius } from '../../constants/theme';
+import { Typography, Spacing } from '../../constants/theme';
 import { HabitCompletion } from '../../types/habit';
-import { getDaysInRange, formatDate, getDayShort } from '../../utils/date';
+import { getDaysInRange, formatDate } from '../../utils/date';
 import { subDays, getDay } from 'date-fns';
 
 interface HabitCalendarProps {

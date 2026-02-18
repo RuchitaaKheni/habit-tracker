@@ -23,13 +23,20 @@ import { Habit, FrequencyType } from '../../src/types/habit';
 import { habitTemplates } from '../../src/constants/templates';
 import { getDayShort } from '../../src/utils/date';
 import { getHabitFrequencyLabel } from '../../src/utils/habit';
+import { useShallow } from 'zustand/react/shallow';
 
 export default function CreateHabitScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const haptics = useHaptics();
-  const { addHabit, habits, profile } = useHabitStore();
+  const { addHabit, habits, profile } = useHabitStore(
+    useShallow((state) => ({
+      addHabit: state.addHabit,
+      habits: state.habits,
+      profile: state.profile,
+    }))
+  );
 
   const [name, setName] = useState('');
   const [icon, setIcon] = useState('🎯');

@@ -16,12 +16,26 @@ const MOOD_OPTIONS: { rating: MoodRating; emoji: string; label: string }[] = [
   { rating: 5, emoji: '🤩', label: 'Great' },
 ];
 
+function normalizeNote(note: string): string | null {
+  const trimmed = note.trim();
+  return trimmed.length > 0 ? trimmed : null;
+}
+
+function generateId(): string {
+  return Date.now().toString(36) + Math.random().toString(36).substring(2, 9);
+}
+
 export function MoodTracker() {
   const colors = useColors();
   const haptics = useHaptics();
   const [selectedMood, setSelectedMood] = useState<MoodRating | null>(null);
   const [note, setNote] = useState('');
   const [saved, setSaved] = useState(false);
+  const [moodId, setMoodId] = useState<string | null>(null);
+  const [lastSavedMood, setLastSavedMood] = useState<{
+    rating: MoodRating;
+    note: string | null;
+  } | null>(null);
 
   useEffect(() => {
     async function loadTodayMood() {
@@ -30,26 +44,48 @@ export function MoodTracker() {
         setSelectedMood(mood.rating);
         setNote(mood.note || '');
         setSaved(true);
+        setMoodId(mood.id);
+        setLastSavedMood({ rating: mood.rating, note: mood.note });
       }
     }
     loadTodayMood();
   }, []);
 
-  const handleSelect = useCallback(async (rating: MoodRating) => {
-    haptics.selection();
-    setSelectedMood(rating);
+  const saveMood = useCallback(
+    async (rating: MoodRating, nextNote: string) => {
+      const normalizedNote = normalizeNote(nextNote);
+      if (
+        lastSavedMood &&
+        lastSavedMood.rating === rating &&
+        lastSavedMood.note === normalizedNote
+      ) {
+        return;
+      }
 
-    const mood: DailyMood = {
-      id: Date.now().toString(36) + Math.random().toString(36).substring(2, 9),
-      date: getToday(),
-      rating,
-      note: note || null,
-      createdAt: new Date().toISOString(),
-    };
+      const mood: DailyMood = {
+        id: moodId ?? generateId(),
+        date: getToday(),
+        rating,
+        note: normalizedNote,
+        createdAt: new Date().toISOString(),
+      };
 
-    await upsertMood(mood);
-    setSaved(true);
-  }, [note]);
+      await upsertMood(mood);
+      setMoodId(mood.id);
+      setLastSavedMood({ rating, note: normalizedNote });
+      setSaved(true);
+    },
+    [lastSavedMood, moodId]
+  );
+
+  const handleSelect = useCallback(
+    async (rating: MoodRating) => {
+      haptics.selection();
+      setSelectedMood(rating);
+      await saveMood(rating, note);
+    },
+    [haptics, note, saveMood]
+  );
 
   return (
     <Animated.View entering={FadeInDown.delay(200)}>
@@ -107,13 +143,7 @@ export function MoodTracker() {
             onChangeText={setNote}
             onBlur={async () => {
               if (selectedMood) {
-                await upsertMood({
-                  id: Date.now().toString(36) + Math.random().toString(36).substring(2, 9),
-                  date: getToday(),
-                  rating: selectedMood,
-                  note: note || null,
-                  createdAt: new Date().toISOString(),
-                });
+                await saveMood(selectedMood, note);
               }
             }}
             maxLength={200}

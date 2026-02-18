@@ -24,6 +24,7 @@ import { formatDisplay, isHabitDueOnDate, isHabitPausedOnDate } from '../../src/
 import { contextTagLabels } from '../../src/constants/templates';
 import { getCompletionStatusLabel, getHabitFrequencyLabel } from '../../src/utils/habit';
 import { format, parseISO } from 'date-fns';
+import { useShallow } from 'zustand/react/shallow';
 
 export default function HabitDetailScreen() {
   const colors = useColors();
@@ -42,7 +43,21 @@ export default function HabitDetailScreen() {
     resumeHabit,
     archiveHabit,
     deleteHabit,
-  } = useHabitStore();
+  } = useHabitStore(
+    useShallow((state) => ({
+      habits: state.habits,
+      todayCompletions: state.todayCompletions,
+      selectedDate: state.selectedDate,
+      getFlexStreak: state.getFlexStreak,
+      getCompletionsForHabit: state.getCompletionsForHabit,
+      setCompletionStatus: state.setCompletionStatus,
+      clearCompletionForSelectedDate: state.clearCompletionForSelectedDate,
+      pauseHabit: state.pauseHabit,
+      resumeHabit: state.resumeHabit,
+      archiveHabit: state.archiveHabit,
+      deleteHabit: state.deleteHabit,
+    }))
+  );
 
   const habit = habits.find((h) => h.id === id);
   const selectedDateCompletion = habit ? todayCompletions.get(habit.id) : undefined;

@@ -51,11 +51,61 @@ interface HabitState {
   getCompletionsForHabit: (habitId: string, days: number) => Promise<HabitCompletion[]>;
 }
 
+function areCompletionsEqual(a: HabitCompletion, b: HabitCompletion): boolean {
+  return (
+    a.id === b.id &&
+    a.habitId === b.habitId &&
+    a.date === b.date &&
+    a.status === b.status &&
+    a.contextTag === b.contextTag &&
+    a.contextNote === b.contextNote &&
+    a.completedAt === b.completedAt &&
+    a.createdAt === b.createdAt
+  );
+}
+
+function areCompletionMapsEqual(
+  current: Map<string, HabitCompletion>,
+  next: Map<string, HabitCompletion>
+): boolean {
+  if (current.size !== next.size) return false;
+
+  for (const [habitId, completion] of next) {
+    const existing = current.get(habitId);
+    if (!existing || !areCompletionsEqual(existing, completion)) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
 export const useHabitStore = create<HabitState>((set, get) => {
   const refreshHabits = async (): Promise<Habit[]> => {
     const habits = await db.getAllHabits();
     set({ habits });
     return habits;
+  };
+
+  const setCompletionForSelectedDate = (completion: HabitCompletion): void => {
+    const { selectedDate, todayCompletions } = get();
+    if (completion.date !== selectedDate) return;
+
+    const existing = todayCompletions.get(completion.habitId);
+    if (existing && areCompletionsEqual(existing, completion)) return;
+
+    const nextCompletions = new Map(todayCompletions);
+    nextCompletions.set(completion.habitId, completion);
+    set({ todayCompletions: nextCompletions });
+  };
+
+  const removeCompletionForSelectedDate = (habitId: string, date: string): void => {
+    const { selectedDate, todayCompletions } = get();
+    if (selectedDate !== date || !todayCompletions.has(habitId)) return;
+
+    const nextCompletions = new Map(todayCompletions);
+    nextCompletions.delete(habitId);
+    set({ todayCompletions: nextCompletions });
   };
 
   const shouldScheduleNotifications = (): boolean => {
@@ -181,9 +231,16 @@ export const useHabitStore = create<HabitState>((set, get) => {
     loadTodayCompletions: async () => {
       const date = get().selectedDate;
       const completions = await db.getCompletionsForDate(date);
+      if (get().selectedDate !== date) {
+        return;
+      }
+
       const completionMap = new Map<string, HabitCompletion>();
       completions.forEach((completion) => completionMap.set(completion.habitId, completion));
-      set({ todayCompletions: completionMap });
+      const todayCompletions = get().todayCompletions;
+      if (!areCompletionMapsEqual(todayCompletions, completionMap)) {
+        set({ todayCompletions: completionMap });
+      }
     },
 
     addHabit: async (habit) => {
@@ -199,10 +256,11 @@ export const useHabitStore = create<HabitState>((set, get) => {
     },
 
     deleteHabit: async (id) => {
+      const selectedDate = get().selectedDate;
       await cancelHabitReminder(id);
       await db.deleteHabit(id);
       await refreshHabits();
-      await get().loadTodayCompletions();
+      removeCompletionForSelectedDate(id, selectedDate);
     },
 
     toggleCompletion: async (habitId) => {
@@ -211,7 +269,7 @@ export const useHabitStore = create<HabitState>((set, get) => {
 
       if (existing?.status === 'completed') {
         await db.deleteCompletion(habitId, selectedDate);
-        await get().loadTodayCompletions();
+        removeCompletionForSelectedDate(habitId, selectedDate);
         return;
       }
 
@@ -244,7 +302,7 @@ export const useHabitStore = create<HabitState>((set, get) => {
       };
 
       await db.upsertCompletion(completion);
-      await get().loadTodayCompletions();
+      setCompletionForSelectedDate(completion);
 
       if (status === 'completed') {
         await maybeUnlockHabitSlot();
@@ -254,7 +312,7 @@ export const useHabitStore = create<HabitState>((set, get) => {
     clearCompletionForSelectedDate: async (habitId) => {
       const { selectedDate } = get();
       await db.deleteCompletion(habitId, selectedDate);
-      await get().loadTodayCompletions();
+      removeCompletionForSelectedDate(habitId, selectedDate);
     },
 
     skipHabit: async (habitId, tag, note) => {
@@ -290,7 +348,7 @@ export const useHabitStore = create<HabitState>((set, get) => {
       await db.upsertCompletion(pauseCompletion);
 
       await refreshHabits();
-      await get().loadTodayCompletions();
+      setCompletionForSelectedDate(pauseCompletion);
     },
 
     resumeHabit: async (habitId) => {
@@ -311,6 +369,7 @@ export const useHabitStore = create<HabitState>((set, get) => {
     },
 
     archiveHabit: async (habitId) => {
+      const selectedDate = get().selectedDate;
       const habit = get().habits.find((item) => item.id === habitId);
       if (!habit) return;
 
@@ -324,7 +383,7 @@ export const useHabitStore = create<HabitState>((set, get) => {
       await db.updateHabit(updated);
       await cancelHabitReminder(habitId);
       await refreshHabits();
-      await get().loadTodayCompletions();
+      removeCompletionForSelectedDate(habitId, selectedDate);
     },
 
     unarchiveHabit: async (habitId) => {
@@ -345,6 +404,7 @@ export const useHabitStore = create<HabitState>((set, get) => {
     },
 
     setSelectedDate: (date) => {
+      if (date === get().selectedDate) return;
       set({ selectedDate: date });
       void get().loadTodayCompletions();
     },

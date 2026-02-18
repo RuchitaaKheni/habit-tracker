@@ -7,8 +7,7 @@
  * For MVP, it uses heuristic rules derived from behavioral psychology research.
  */
 
-import { Habit, HabitCompletion, FlexStreak } from '../types/habit';
-import { getHabitStrengthLabel } from '../utils/streaks';
+import { Habit, FlexStreak } from '../types/habit';
 
 export interface CoachingTip {
   id: string;
