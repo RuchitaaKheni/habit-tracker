@@ -31,7 +31,9 @@ yarn-error.*
 *.pem
 
 # local env files
+.env
 .env*.local
+.env.production
 
 # typescript
 *.tsbuildinfo
@@ -39,3 +41,19 @@ yarn-error.*
 # generated native folders
 /ios
 /android
+
+# Firebase config (contains API keys)
+google-services.json
+GoogleService-Info.plist
+google-play-key.json
+
+# IDE
+.vscode/
+.idea/
+
+# Testing
+coverage/
+__tests__/__snapshots__/
+
+# EAS
+eas-credentials/
