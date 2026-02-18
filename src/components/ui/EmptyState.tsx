@@ -17,48 +17,55 @@ export function EmptyState({ icon, title, message, actionLabel, onAction }: Empt
 
   return (
     <View style={styles.container}>
-      <View style={[styles.iconContainer, { backgroundColor: colors.primaryLight }]}>
-        <Text style={styles.icon}>{icon}</Text>
+      <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+        <View style={[styles.iconContainer, { backgroundColor: colors.primaryLight }]}>
+          <Text style={styles.icon}>{icon}</Text>
+        </View>
+        <Text style={[styles.title, { color: colors.textPrimary }]}>{title}</Text>
+        <Text style={[styles.message, { color: colors.textSecondary }]}>{message}</Text>
+        {actionLabel && onAction && (
+          <Button title={actionLabel} onPress={onAction} variant="primary" size="md" style={styles.button} />
+        )}
       </View>
-      <Text style={[styles.title, { color: colors.textPrimary }]}>{title}</Text>
-      <Text style={[styles.message, { color: colors.textSecondary }]}>{message}</Text>
-      {actionLabel && onAction && (
-        <Button title={actionLabel} onPress={onAction} variant="primary" size="md" style={styles.button} />
-      )}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
+    marginHorizontal: Spacing.lg,
+    marginVertical: Spacing.lg,
+  },
+  card: {
     alignItems: 'center',
     justifyContent: 'center',
-    paddingHorizontal: Spacing['3xl'],
+    borderWidth: 1,
+    borderRadius: BorderRadius.xl,
+    paddingHorizontal: Spacing['2xl'],
     paddingVertical: Spacing['5xl'],
   },
   iconContainer: {
-    width: 80,
-    height: 80,
+    width: 72,
+    height: 72,
     borderRadius: BorderRadius.full,
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: Spacing.xl,
+    marginBottom: Spacing.lg,
   },
   icon: {
-    fontSize: 36,
+    fontSize: 32,
   },
   title: {
-    ...Typography.h2,
+    ...Typography.h3,
     textAlign: 'center',
-    marginBottom: Spacing.sm,
+    marginBottom: Spacing.xs,
   },
   message: {
-    ...Typography.body,
+    ...Typography.bodySmall,
     textAlign: 'center',
-    marginBottom: Spacing['2xl'],
+    marginBottom: Spacing.xl,
   },
   button: {
-    minWidth: 200,
+    minWidth: 170,
   },
 });

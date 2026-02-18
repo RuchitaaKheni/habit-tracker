@@ -107,14 +107,21 @@ export function HabitCard({
             backgroundColor: cardBgColor,
             borderColor: borderColor,
             borderWidth: isCompleted ? 1.5 : 1,
-            opacity: isPaused ? 0.6 : 1,
+            opacity: isPaused ? 0.78 : 1,
           },
         ]}
         accessibilityRole="button"
         accessibilityLabel={`${habit.name}, ${isCompleted ? 'completed' : 'not completed'}`}
       >
         <View style={styles.leftSection}>
-          <Text style={styles.icon}>{habit.icon}</Text>
+          <View
+            style={[
+              styles.iconWrap,
+              { backgroundColor: isCompleted ? '#FFFFFF88' : colors.surfaceSecondary },
+            ]}
+          >
+            <Text style={styles.icon}>{habit.icon}</Text>
+          </View>
           <View style={styles.textContainer}>
             <Text
               style={[
@@ -167,10 +174,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: Spacing.lg,
-    paddingVertical: Spacing.lg,
-    borderRadius: BorderRadius.lg,
+    paddingVertical: 14,
+    borderRadius: BorderRadius.xl,
     marginHorizontal: Spacing.lg,
-    marginBottom: Spacing.sm,
+    marginBottom: Spacing.md,
   },
   leftSection: {
     flexDirection: 'row',
@@ -178,9 +185,16 @@ const styles = StyleSheet.create({
     flex: 1,
     marginRight: Spacing.md,
   },
-  icon: {
-    fontSize: 28,
+  iconWrap: {
+    width: 42,
+    height: 42,
+    borderRadius: 13,
+    alignItems: 'center',
+    justifyContent: 'center',
     marginRight: Spacing.md,
+  },
+  icon: {
+    fontSize: 24,
   },
   textContainer: {
     flex: 1,

@@ -18,16 +18,22 @@ export default function TabLayout() {
         tabBarInactiveTintColor: colors.tabBarInactive,
         tabBarStyle: {
           backgroundColor: colors.tabBar,
-          borderTopColor: colors.border,
-          borderTopWidth: 0.5,
+          borderTopWidth: 0,
+          borderColor: colors.border,
+          borderWidth: 1,
+          position: 'absolute',
+          left: 12,
+          right: 12,
+          bottom: 12,
+          borderRadius: 22,
           paddingTop: 8,
           paddingBottom: Platform.OS === 'ios' ? 20 : 10,
-          height: Platform.OS === 'ios' ? 90 : 72,
-          ...Shadows.sm,
+          height: Platform.OS === 'ios' ? 88 : 74,
+          ...Shadows.lg,
         },
         tabBarLabelStyle: {
           ...Typography.caption,
-          fontWeight: '500',
+          fontWeight: '600',
           fontSize: 10,
         },
       }}
@@ -36,8 +42,8 @@ export default function TabLayout() {
         name="index"
         options={{
           title: 'Home',
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="home-outline" size={size} color={color} />
+          tabBarIcon: ({ color, size, focused }) => (
+            <Ionicons name={focused ? 'home' : 'home-outline'} size={size} color={color} />
           ),
         }}
       />
@@ -45,8 +51,8 @@ export default function TabLayout() {
         name="insights"
         options={{
           title: 'Stats',
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="bar-chart-outline" size={size} color={color} />
+          tabBarIcon: ({ color, size, focused }) => (
+            <Ionicons name={focused ? 'bar-chart' : 'bar-chart-outline'} size={size} color={color} />
           ),
         }}
       />
@@ -61,11 +67,13 @@ export default function TabLayout() {
               activeOpacity={0.85}
               onPress={() => router.push('/habit/create')}
               style={{
-                top: -16,
-                width: 56,
-                height: 56,
-                borderRadius: 16,
+                top: -18,
+                width: 60,
+                height: 60,
+                borderRadius: 18,
                 backgroundColor: colors.primary,
+                borderColor: colors.surface,
+                borderWidth: 2,
                 alignItems: 'center',
                 justifyContent: 'center',
                 ...Shadows.lg,
@@ -82,8 +90,8 @@ export default function TabLayout() {
         name="rewards"
         options={{
           title: 'Rewards',
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="trophy-outline" size={size} color={color} />
+          tabBarIcon: ({ color, size, focused }) => (
+            <Ionicons name={focused ? 'trophy' : 'trophy-outline'} size={size} color={color} />
           ),
         }}
       />
@@ -91,8 +99,8 @@ export default function TabLayout() {
         name="settings"
         options={{
           title: 'Profile',
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="person-outline" size={size} color={color} />
+          tabBarIcon: ({ color, size, focused }) => (
+            <Ionicons name={focused ? 'person' : 'person-outline'} size={size} color={color} />
           ),
         }}
       />

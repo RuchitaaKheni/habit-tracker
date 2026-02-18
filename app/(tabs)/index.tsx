@@ -184,6 +184,9 @@ export default function TodayScreen() {
           <Text style={[styles.greeting, { color: colors.textPrimary }]}>
             {getGreeting()} 👋
           </Text>
+          <Text style={[styles.headerSubtitle, { color: colors.textSecondary }]}>
+            Build consistency with one clear action at a time.
+          </Text>
         </View>
 
         <View style={[styles.quoteCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
@@ -204,42 +207,44 @@ export default function TodayScreen() {
           </TouchableOpacity>
         </View>
 
-        <View style={styles.weekStrip}>
-          {weekDates.map((date) => {
-            const dateValue = format(date, 'yyyy-MM-dd');
-            const selected = dateValue === selectedDate;
-            const isToday = dateValue === format(todayDate, 'yyyy-MM-dd');
-            return (
-              <TouchableOpacity
-                key={dateValue}
-                onPress={() => setSelectedDate(dateValue)}
-                style={styles.dayWrap}
-              >
-                <Text style={[styles.dayLabel, { color: colors.textSecondary }]}>
-                  {format(date, 'EEE')}
-                </Text>
-                <View
-                  style={[
-                    styles.dayCircle,
-                    {
-                      backgroundColor: selected ? colors.primary : colors.surface,
-                      borderColor: selected ? colors.primary : colors.border,
-                    },
-                  ]}
+        <View style={[styles.weekStripCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+          <View style={styles.weekStrip}>
+            {weekDates.map((date) => {
+              const dateValue = format(date, 'yyyy-MM-dd');
+              const selected = dateValue === selectedDate;
+              const isToday = dateValue === format(todayDate, 'yyyy-MM-dd');
+              return (
+                <TouchableOpacity
+                  key={dateValue}
+                  onPress={() => setSelectedDate(dateValue)}
+                  style={styles.dayWrap}
                 >
-                  <Text style={[styles.dayNumber, { color: selected ? '#FFFFFF' : colors.textPrimary }]}>
-                    {format(date, 'd')}
+                  <Text style={[styles.dayLabel, { color: colors.textSecondary }]}>
+                    {format(date, 'EEE')}
                   </Text>
-                </View>
-                <View
-                  style={[
-                    styles.todayDot,
-                    { backgroundColor: isToday ? colors.primary : 'transparent' },
-                  ]}
-                />
-              </TouchableOpacity>
-            );
-          })}
+                  <View
+                    style={[
+                      styles.dayCircle,
+                      {
+                        backgroundColor: selected ? colors.primary : colors.surfaceSecondary,
+                        borderColor: selected ? colors.primary : colors.border,
+                      },
+                    ]}
+                  >
+                    <Text style={[styles.dayNumber, { color: selected ? '#FFFFFF' : colors.textPrimary }]}>
+                      {format(date, 'd')}
+                    </Text>
+                  </View>
+                  <View
+                    style={[
+                      styles.todayDot,
+                      { backgroundColor: isToday ? colors.primary : 'transparent' },
+                    ]}
+                  />
+                </TouchableOpacity>
+              );
+            })}
+          </View>
         </View>
 
         <Animated.View entering={FadeInDown.delay(100)} style={[styles.progressCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
@@ -367,10 +372,14 @@ const styles = StyleSheet.create({
   greeting: {
     ...Typography.h1,
   },
+  headerSubtitle: {
+    ...Typography.bodySmall,
+    marginTop: 4,
+  },
   quoteCard: {
     marginHorizontal: Spacing.lg,
     borderWidth: 1,
-    borderRadius: BorderRadius.lg,
+    borderRadius: BorderRadius.xl,
     padding: Spacing.lg,
     marginBottom: Spacing.md,
     flexDirection: 'row',
@@ -408,11 +417,17 @@ const styles = StyleSheet.create({
     ...Typography.caption,
     fontWeight: '600',
   },
+  weekStripCard: {
+    marginHorizontal: Spacing.lg,
+    marginBottom: Spacing.lg,
+    borderWidth: 1,
+    borderRadius: BorderRadius.xl,
+    paddingVertical: Spacing.md,
+  },
   weekStrip: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    paddingHorizontal: Spacing.lg,
-    marginBottom: Spacing.lg,
+    paddingHorizontal: Spacing.md,
   },
   dayWrap: {
     alignItems: 'center',

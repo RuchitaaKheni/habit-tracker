@@ -19,7 +19,7 @@ export function InsightCard({ icon, title, message, accentColor }: InsightCardPr
       style={[
         styles.card,
         Shadows.sm,
-        { backgroundColor: colors.surface, borderLeftColor: accent },
+        { backgroundColor: colors.surface, borderColor: colors.border, borderLeftColor: accent },
       ]}
     >
       <View style={styles.header}>
@@ -33,7 +33,8 @@ export function InsightCard({ icon, title, message, accentColor }: InsightCardPr
 
 const styles = StyleSheet.create({
   card: {
-    borderRadius: BorderRadius.md,
+    borderRadius: BorderRadius.lg,
+    borderWidth: 1,
     borderLeftWidth: 4,
     padding: Spacing.lg,
     marginBottom: Spacing.md,

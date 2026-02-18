@@ -9,7 +9,7 @@ import {
 } from 'react-native';
 import { useColors } from '../../hooks/useColors';
 import { useHaptics } from '../../hooks/useHaptics';
-import { Typography, BorderRadius, Spacing } from '../../constants/theme';
+import { Typography, BorderRadius, Spacing, Shadows } from '../../constants/theme';
 
 type ButtonVariant = 'primary' | 'secondary' | 'outline' | 'ghost';
 type ButtonSize = 'sm' | 'md' | 'lg';
@@ -52,11 +52,11 @@ export function Button({
     ...styles.base,
     ...sizeStyles[size],
     ...(fullWidth && styles.fullWidth),
-    ...(variant === 'primary' && { backgroundColor: colors.primary }),
-    ...(variant === 'secondary' && { backgroundColor: colors.secondary }),
+    ...(variant === 'primary' && { backgroundColor: colors.primary, ...Shadows.sm }),
+    ...(variant === 'secondary' && { backgroundColor: colors.secondary, ...Shadows.sm }),
     ...(variant === 'outline' && {
       backgroundColor: 'transparent',
-      borderWidth: 1.5,
+      borderWidth: 1,
       borderColor: colors.primary,
     }),
     ...(variant === 'ghost' && { backgroundColor: 'transparent' }),
@@ -77,7 +77,7 @@ export function Button({
       style={[containerStyle, style]}
       onPress={handlePress}
       disabled={disabled || loading}
-      activeOpacity={0.7}
+      activeOpacity={0.9}
       accessibilityRole="button"
       accessibilityLabel={title}
     >
@@ -103,7 +103,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    borderRadius: BorderRadius.md,
+    borderRadius: BorderRadius.lg,
   },
   fullWidth: {
     width: '100%',
@@ -111,13 +111,13 @@ const styles = StyleSheet.create({
 });
 
 const sizeStyles: Record<ButtonSize, ViewStyle> = {
-  sm: { paddingHorizontal: 16, paddingVertical: 8, borderRadius: BorderRadius.sm },
-  md: { paddingHorizontal: 24, paddingVertical: 14, borderRadius: BorderRadius.md },
-  lg: { paddingHorizontal: 32, paddingVertical: 18, borderRadius: BorderRadius.lg },
+  sm: { paddingHorizontal: 16, paddingVertical: 10, borderRadius: BorderRadius.md },
+  md: { paddingHorizontal: 24, paddingVertical: 14, borderRadius: BorderRadius.lg },
+  lg: { paddingHorizontal: 30, paddingVertical: 16, borderRadius: BorderRadius.xl },
 };
 
 const sizeTextStyles: Record<ButtonSize, TextStyle> = {
-  sm: { fontSize: 14 },
-  md: { fontSize: 16 },
-  lg: { fontSize: 18 },
+  sm: { fontSize: 14, letterSpacing: 0.2 },
+  md: { fontSize: 16, letterSpacing: 0.2 },
+  lg: { fontSize: 17, letterSpacing: 0.3 },
 };

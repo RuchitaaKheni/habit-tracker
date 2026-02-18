@@ -69,14 +69,15 @@ const styles = StyleSheet.create({
     left: Spacing.lg,
     right: Spacing.lg,
     paddingHorizontal: Spacing.lg,
-    paddingVertical: Spacing.md,
-    borderRadius: BorderRadius.md,
+    paddingVertical: 11,
+    borderRadius: BorderRadius.lg,
     zIndex: 1000,
     alignItems: 'center',
   },
   message: {
     ...Typography.bodySmall,
     color: '#FFFFFF',
-    fontWeight: '600',
+    fontWeight: '700',
+    letterSpacing: 0.2,
   },
 });

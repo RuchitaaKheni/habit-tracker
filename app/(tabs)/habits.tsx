@@ -98,6 +98,9 @@ export default function HabitsScreen() {
         showsVerticalScrollIndicator={false}
       >
         <Text style={[styles.screenTitle, { color: colors.textPrimary }]}>My Habits</Text>
+        <Text style={[styles.screenSubtitle, { color: colors.textSecondary }]}>
+          Keep your list clear, focused, and easy to maintain.
+        </Text>
 
         <View
           style={[
@@ -121,6 +124,7 @@ export default function HabitsScreen() {
                 {
                   backgroundColor:
                     activeFilter === filter.value ? colors.primary : colors.surfaceSecondary,
+                  borderColor: activeFilter === filter.value ? colors.primary : colors.border,
                 },
               ]}
               onPress={() => {
@@ -206,7 +210,11 @@ export default function HabitsScreen() {
 
       {/* FAB */}
       <TouchableOpacity
-        style={[styles.fab, Shadows.lg, { backgroundColor: colors.primary }]}
+        style={[
+          styles.fab,
+          Shadows.lg,
+          { backgroundColor: colors.primary, borderColor: colors.surface },
+        ]}
         onPress={() => router.push('/habit/create')}
         activeOpacity={0.8}
       >
@@ -222,6 +230,11 @@ const styles = StyleSheet.create({
   },
   screenTitle: {
     ...Typography.h1,
+    paddingHorizontal: Spacing.lg,
+    marginBottom: 2,
+  },
+  screenSubtitle: {
+    ...Typography.bodySmall,
     paddingHorizontal: Spacing.lg,
     marginBottom: Spacing.lg,
   },
@@ -247,7 +260,8 @@ const styles = StyleSheet.create({
   },
   filterTab: {
     paddingHorizontal: Spacing.lg,
-    paddingVertical: Spacing.sm,
+    paddingVertical: 9,
+    borderWidth: 1,
     borderRadius: BorderRadius.full,
   },
   filterText: {
@@ -258,9 +272,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     marginHorizontal: Spacing.lg,
-    marginBottom: Spacing.sm,
-    padding: Spacing.lg,
-    borderRadius: BorderRadius.lg,
+    marginBottom: Spacing.md,
+    padding: 14,
+    borderRadius: BorderRadius.xl,
     borderWidth: 1,
   },
   colorDot: {
@@ -297,10 +311,11 @@ const styles = StyleSheet.create({
   fab: {
     position: 'absolute',
     right: Spacing.lg,
-    bottom: 100,
-    width: 56,
-    height: 56,
-    borderRadius: 28,
+    bottom: 96,
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    borderWidth: 2,
     alignItems: 'center',
     justifyContent: 'center',
   },

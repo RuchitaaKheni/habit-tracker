@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, TouchableOpacity, TextInput } from 'react-nativ
 import Animated, { FadeInDown } from 'react-native-reanimated';
 import { useColors } from '../../hooks/useColors';
 import { useHaptics } from '../../hooks/useHaptics';
-import { Typography, Spacing, BorderRadius } from '../../constants/theme';
+import { Typography, Spacing, BorderRadius, Shadows } from '../../constants/theme';
 import { MoodRating, DailyMood } from '../../types/habit';
 import { upsertMood, getMoodForDate } from '../../database/database';
 import { getToday } from '../../utils/date';
@@ -53,9 +53,12 @@ export function MoodTracker() {
 
   return (
     <Animated.View entering={FadeInDown.delay(200)}>
-      <View style={[styles.container, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+      <View style={[styles.container, Shadows.sm, { backgroundColor: colors.surface, borderColor: colors.border }]}>
         <Text style={[styles.title, { color: colors.textPrimary }]}>
           {saved ? 'Today\'s Mood' : 'How are you feeling?'}
+        </Text>
+        <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
+          A quick check-in helps you spot patterns with your habits.
         </Text>
         <View style={styles.moodRow}>
           {MOOD_OPTIONS.map((option) => (
@@ -127,29 +130,36 @@ const styles = StyleSheet.create({
     marginHorizontal: Spacing.lg,
     marginBottom: Spacing.lg,
     padding: Spacing.lg,
-    borderRadius: BorderRadius.lg,
+    borderRadius: BorderRadius.xl,
     borderWidth: 1,
   },
   title: {
     ...Typography.bodySmall,
-    fontWeight: '600',
-    marginBottom: Spacing.md,
+    fontWeight: '700',
+    marginBottom: 2,
     textAlign: 'center',
+  },
+  subtitle: {
+    ...Typography.caption,
+    textAlign: 'center',
+    marginBottom: Spacing.md,
   },
   moodRow: {
     flexDirection: 'row',
-    justifyContent: 'space-around',
+    justifyContent: 'space-between',
   },
   moodButton: {
     alignItems: 'center',
     paddingVertical: Spacing.sm,
-    paddingHorizontal: Spacing.sm,
+    paddingHorizontal: 6,
     borderRadius: BorderRadius.md,
-    borderWidth: 1.5,
+    borderWidth: 1,
+    flex: 1,
+    marginHorizontal: 2,
   },
   moodEmoji: {
-    fontSize: 28,
-    marginBottom: 4,
+    fontSize: 24,
+    marginBottom: 2,
   },
   moodLabel: {
     ...Typography.caption,

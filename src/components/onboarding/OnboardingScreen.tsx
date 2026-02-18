@@ -274,7 +274,12 @@ export function OnboardingScreen({ onComplete }: OnboardingScreenProps) {
         <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
           Your first habit is ready. Let's make today count.
         </Text>
-        <View style={styles.tipCard}>
+        <View
+          style={[
+            styles.tipCard,
+            { backgroundColor: colors.surfaceSecondary, borderColor: colors.borderLight },
+          ]}
+        >
           <Text style={[styles.tipTitle, { color: colors.primary }]}>Pro tip</Text>
           <Text style={[styles.tipText, { color: colors.textSecondary }]}>
             Start with just this one habit. After 2 weeks of 60%+ consistency, you'll unlock the ability to add more.
@@ -426,10 +431,10 @@ const styles = StyleSheet.create({
     marginTop: Spacing.lg,
   },
   optionCard: {
-    paddingVertical: Spacing.lg,
+    paddingVertical: 15,
     paddingHorizontal: Spacing.xl,
-    borderRadius: BorderRadius.md,
-    borderWidth: 1.5,
+    borderRadius: BorderRadius.lg,
+    borderWidth: 1,
     alignItems: 'center',
   },
   optionText: {
@@ -443,8 +448,8 @@ const styles = StyleSheet.create({
   templateCard: {
     width: 100,
     height: 100,
-    borderRadius: BorderRadius.md,
-    borderWidth: 1.5,
+    borderRadius: BorderRadius.lg,
+    borderWidth: 1,
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: Spacing.md,
@@ -476,13 +481,15 @@ const styles = StyleSheet.create({
     ...Typography.body,
     width: '100%',
     borderWidth: 1,
-    borderRadius: BorderRadius.md,
+    borderRadius: BorderRadius.lg,
     padding: Spacing.lg,
     marginBottom: Spacing['2xl'],
     textAlign: 'center',
   },
   tipCard: {
     width: '100%',
+    borderWidth: 1,
+    borderRadius: BorderRadius.lg,
     padding: Spacing.lg,
     marginBottom: Spacing['3xl'],
   },
