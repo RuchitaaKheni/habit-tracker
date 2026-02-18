@@ -13,7 +13,7 @@ import Animated, { FadeInDown } from 'react-native-reanimated';
 import { Ionicons } from '@expo/vector-icons';
 import { format, parseISO, subDays } from 'date-fns';
 import { useColors } from '../../src/hooks/useColors';
-import { Typography, Spacing, BorderRadius, Shadows } from '../../src/constants/theme';
+import { Typography, Spacing, BorderRadius } from '../../src/constants/theme';
 import { useHabitStore } from '../../src/store/habitStore';
 import { HabitCard } from '../../src/components/habits/HabitCard';
 import { ContextTagSheet } from '../../src/components/habits/ContextTagSheet';
@@ -448,7 +448,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: Spacing.md,
-    ...Shadows.sm,
+    boxShadow: '0px 1px 2px rgba(0, 0, 0, 0.05)',
   },
   progressTextWrap: {
     flex: 1,
